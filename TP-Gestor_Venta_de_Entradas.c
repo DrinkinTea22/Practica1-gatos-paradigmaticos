@@ -20,68 +20,83 @@ comprobar si x asiento esta vendido o no
 #include <stdlib.h>
 #include <stdbool.h>
 #define constante 100
-#define max_eventos 5
+#define maximo_eventos 5
+#define boletos 20
 
 typedef struct
 {
     char tipo_entrada[constante];
     int asiento;
-    char hora_vta[constante];
-    char fecha_vta[constante];
     float precio;
     char nombre_casa_venta[constante];
     char evento[constante];
-}boleto;
+} boleto;
 
 typedef struct
 {
     int numero;
+    int cantidad_entradas;
     char nombre[constante];
-}evento;
+} evento;
 
-int total=0;    //no se que hará aun
 
 //<retorno> <nombre variable> (<parametros>)
-int numero_asientos(void);
-void status(char a[]);
+//int numero_asientos(void); deprecated
+void status(char texto[]);
 //evento manipulacion
-evento menu_eventos(int maximo_eventos);
-evento CrearEvento(int a, int b);
-void ListarEvento(evento x[], int a);
-int SeleccionarEvento(int a, int b);
+void menu_eventos(int evento_numero_maximo);
+evento CrearEvento(int eventos_creados, int evento_numero_maximo);
+void ListarEvento(evento evento_disponibles[], int evento_numero_maximo);
+int SeleccionarEvento(int eventos_creados, int evento_numero_maximo);
+void ModificarEvento(int evento_seleccionado, evento un_evento[]);
 //evento operativo
-void menu_boletos(int seleccion, int asientos_total, int total_eventos, int maximo_eventos, evento un_evento[]);
-boleto VenderBoletos(int EventoSeleccionado, int asientos_total, evento un_evento[]);
-void ListarInformacionBoleto(int EventoSeleccionado, int asientos_total, boleto BoletoVendido[]);
+int menu_boletos(int evento_seleccionado, int boletos_disponibles, int eventos_creados, int evento_numero_maximo, evento un_evento[], int cantidad_entradas);
+boleto VenderBoletos(int evento_seleccionado, int boletos_disponibles, evento un_evento[]);
+void ListarInformacionBoleto(int evento_seleccionado, int BoletoVendido_Contador, boleto BoletoVendido[maximo_eventos][boletos]);
+int Seleccionar_boleto(int a);
+boleto borrar_boleto(int seleccion, int cantidad_entradas, boleto BoletoVendido[maximo_eventos][boletos], int evento_seleccionado );
 
-int main(){
+int main()
+{
     printf("\t----------Bienvenido a VentaOnlineUwU!!----------");
-    menu_eventos(numero_asientos());
+    menu_eventos(maximo_eventos);
 
     return 0;
 }
 
+/*deprecated
 int numero_asientos(void){
     int asientos;
     printf("\n Ingrese el numero de asientos de los cuales dispone para vender entradas: ");
     scanf("%d", &asientos);
     return asientos;
 }
-
+*/
 //escribir estatus de cierta parte del programa
-void status(char a[]){
-    printf("%s", a);
+void status(char texto[])
+{
+    printf("%s", texto);
 }
 //selector de operaciones entre eventos
-evento menu_eventos(int maximo_eventos){
+void menu_eventos(int evento_numero_maximo)
+{
     status("\n\t\tEventos: manipulacion\n");
-    int asientos_total=max_eventos, seleccion=0;
-    int opcion,total_eventos=0;
-    evento un_evento[max_eventos];  //eventos disponibles
+    int boletos_disponibles=boletos;
+    int evento_seleccionado=0;
+    int eventos_creados=0;
+    int opcion;
+    evento un_evento[evento_numero_maximo];
+
+    un_evento[0].cantidad_entradas=0;
+    un_evento[1].cantidad_entradas=0;
+    un_evento[2].cantidad_entradas=0;
+    un_evento[3].cantidad_entradas=0;
+    un_evento[4].cantidad_entradas=0;
+    //eventos disponibles
 
     while (opcion!=5)
     {
-        printf("\nEventos disponibles %i de %i eventos, que desea realizar? ", total_eventos, max_eventos);
+        printf("\nEventos disponibles %i\\%i eventos, ¿que desea realizar? ", eventos_creados, evento_numero_maximo);
 
         printf("\n1. Crear evento\n");
         printf("2. Listar eventos\n");
@@ -91,89 +106,111 @@ evento menu_eventos(int maximo_eventos){
         printf("Ingrese una opcion: ");
         scanf("%d", &opcion);
 
-   	 	switch(opcion)
-   	 	{
-    		    case 1:
-    		    if(total_eventos<maximo_eventos){
-        		    un_evento[total_eventos]=CrearEvento(total_eventos, maximo_eventos);
-        		    total_eventos++;            //se creó un evento
-    		        }
-    		    else{
-    		        status("\nno se puede crear mas eventos!");  
-    		    		} 
-                    break;
-     	  	 case 2:
-                ListarEvento(un_evento, total_eventos);
-                    break;
-     	  	 case 3:
-                ListarEvento(un_evento, total_eventos);
-                seleccion=SeleccionarEvento(total_eventos, max_eventos);
-                /*
-                esta funcion requiere de:
+        switch(opcion)
+        {
+        case 1:
+            if(eventos_creados < evento_numero_maximo)
+            {
+                un_evento[eventos_creados] = CrearEvento(eventos_creados, evento_numero_maximo);
+                eventos_creados++;  //se creó un evento
+            }
+            else
+            {
+                status("\nno se puede crear mas eventos!");
+            }
+            break;
+        case 2:
+            ListarEvento(un_evento, eventos_creados);
+            break;
+        case 3:
+            ListarEvento(un_evento, eventos_creados);
+            evento_seleccionado = SeleccionarEvento(eventos_creados, evento_numero_maximo);
+            /*
+            esta funcion requiere de:
 
-                -evento seleccionado = (seleccion)
-                -numero de asientos = (asientos_total)
-                -numero de eventos creados = (total_eventos)
-                -maximo de eventos que la empresa puede manejar = (max_eventos)
-                -vector que contiene numero "id" y un nombre = un_evento
-                */
-                menu_boletos(seleccion, asientos_total, total_eventos, max_eventos, un_evento);     //se llevo a cabo la seleccion, continuar en menu_boletos()
-                    break;
-            case 4:
-                //borrar();
-                break;
-            case 5:
-                break;
-       		 default:
-                printf("Opcion incorrecta\n");
-                    break;
-   	 	}
+            -evento seleccionado = (evento_seleccionado)
+            -numero de boletos = (boletos_disponibles)
+            -numero de eventos creados = (eventos_creados)
+            -maximo de eventos que la empresa puede manejar = (evento_numero_maximo)
+            -vector que contiene numero "id" y un nombre = un_evento
+            */
+            //se llevo a cabo la seleccion, continuar en menu_boletos()
+            un_evento[evento_seleccionado].cantidad_entradas=menu_boletos(evento_seleccionado, boletos_disponibles, eventos_creados, evento_numero_maximo, un_evento,  un_evento[evento_seleccionado].cantidad_entradas);
+            break;
+        case 4:
+            ListarEvento(un_evento, eventos_creados);
+            evento_seleccionado = SeleccionarEvento(eventos_creados, evento_numero_maximo);
+            ModificarEvento(evento_seleccionado, un_evento);
+            break;
+        case 5:
+            break;
+        default:
+            printf("Opcion incorrecta\n");
+            break;
+        }
     }
 }
-evento CrearEvento(int a, int b){
+evento CrearEvento(int eventos_creados, int evento_numero_maximo)
+{
     evento informacion;
-    system("cls");
-    printf("\nIngrese el nombre del evento %i: ", a+1);
+    //system("cls");
+    printf("\nIngrese el nombre del evento %i: ", eventos_creados+1);
     scanf("%s", informacion.nombre);
-    //aqui numero=a+1 ya que se quiere mostrar opciones de 1 hasta max_eventos en lugar de 0 hasta max_eventos
-    informacion.numero=(a+1);
+    //aqui numero=eventos_creados+1 ya que se quiere mostrar opciones de 1 hasta evento_numero_maximo en lugar de 0 hasta evento_numero_maximo
+    informacion.numero = (eventos_creados+1);
 
     return informacion;
 }
-void ListarEvento(evento x[], int a){
-    system("cls");
+void ListarEvento(evento evento_disponibles[], int evento_numero_maximo)
+{
+    //system("cls");
     printf("\nListado de eventos: ");
-    for(int i=0;i<a;i++){
-        printf("\n %i: %s", x[i].numero, x[i].nombre);
+    for(int i=0; i < evento_numero_maximo; i++)
+    {
+        printf("\n %i: %s", evento_disponibles[i].numero, evento_disponibles[i].nombre);
     }
     printf("\n");
 }
-int SeleccionarEvento(int a, int b){
+int SeleccionarEvento(int eventos_creados, int evento_numero_maximo)
+{
     int seleccion;
 
     //verificar que el evento exista "no ser menor a cero o mayor a los eventos creados"
-    do{
-        printf("\nSeleccione un evento de %i/%i: ", a, b);
+    do
+    {
+        printf("\nSeleccione un evento de %i/%i: ", eventos_creados, evento_numero_maximo);
         scanf("%d", &seleccion);
-        system("cls");
+        //system("cls");
 
-    }while(seleccion<0 || seleccion>a);
+    }
+    while(seleccion<0 || seleccion>eventos_creados);
     return seleccion;
 }
-void menu_boletos(int EventoSeleccionado, int asientos_total, int total_eventos, int maximo_eventos, evento un_evento[]){
-    status("\n\t\tEventos: operativo\n");
-    //e[a-1] se coloca de esta manera ya que seleccion comienza desde 1-max_eventos en lugar de 
-		//empezar por 0 que es por donde comienzan los vectores
-    printf("\nSu seleccion fue el evento: [%i] Nombre: %s!\n", EventoSeleccionado, un_evento[EventoSeleccionado-1].nombre);
-    int opcion;
-    //d = max_eventos (que permite la empresa)
-    boleto BoletoVendido[asientos_total];
-    //todo lo interno de un evento (ventas, tiempo, asientos disponibles, etc.)
 
-    printf("\nTotal de entradas actuales %d \n", asientos_total);
+void ModificarEvento(int evento_seleccionado, evento un_evento[]) {
+    printf("\nEvento seleccionado: %s\n", un_evento[evento_seleccionado - 1].nombre);
+    printf("Ingrese el nuevo nombre del evento: ");
+    scanf(" %[^\n]s", un_evento[evento_seleccionado - 1].nombre);
+    printf("El evento ha sido modificado exitosamente.\n");
+}
+
+int menu_boletos(int evento_seleccionado, int boletos_disponibles, int eventos_creados, int evento_numero_maximo, evento un_evento[], int cantidad_entradas)
+{
+    int opcion;
+    int  seleccion; //save = es una funcion que guradara el valor de la "cantidad_entradas -1" (para la funcion de borrar/cancelar_venta_voleto)
+
+    boleto BoletoVendido[evento_numero_maximo][boletos];
+    // int BoletoVendido_Contador=0;   //desde 0 - boletos_disponibles
+
+    //todo lo interno de un evento (ventas, tiempo, asientos disponibles, etc.)
     while (opcion!=4)
     {
-        printf("\nVenta de Entradas! ¿Que accion va a realizar?\n");
+        //e[a-1] se coloca de esta manera ya que seleccion comienza desde 1-evento_numero_maximo en lugar de
+        //empezar por 0 que es por donde comienzan los vectores
+        status("\n\t\tEventos: operativo\n");
+        printf("\nSu seleccion fue el evento: %i Nombre: \"%s\"!\n", evento_seleccionado, un_evento[evento_seleccionado-1].nombre);
+        printf("\nTotal de boletos vendidos %d\\%d \n", cantidad_entradas, boletos_disponibles);
+        printf("\nVenta de boletos! ¿Que accion va a realizar?\n");
 
         printf("1. Vender un boleto\n");
         printf("2. Cancelar la venta de un boleto\n");
@@ -182,41 +219,44 @@ void menu_boletos(int EventoSeleccionado, int asientos_total, int total_eventos,
         printf("Ingrese una opcion: ");
         scanf("%d", &opcion);
 
-        printf("\n*________________________________________________________________________________________________________*");
+        printf("\n*____________________________________*");
 
-   	 	switch(opcion)
-   	 	{
-    		    case 1:
-                BoletoVendido[EventoSeleccionado]=VenderBoletos(EventoSeleccionado,asientos_total, un_evento);
-                EventoSeleccionado++;   //se vendio un boleto
-                    break;
-     	  	 case 2:
-                //modificar();
-                    break;
-       		 case 3:
-                ListarInformacionBoleto(EventoSeleccionado, asientos_total, BoletoVendido);
-                    break;
-       		 case 4:
-           			system("cls");
-                    break;
-       		 default:
-                printf("Opcion incorrecta\n");
-                    break;
-   	 	}
+        switch(opcion)
+        {
+        case 1:
+            BoletoVendido[evento_seleccionado][cantidad_entradas] = VenderBoletos(evento_seleccionado,boletos_disponibles, un_evento);
+            cantidad_entradas++;   //se vendio un boleto
+            break;
+        case 2:
+            ListarInformacionBoleto(evento_seleccionado, cantidad_entradas, BoletoVendido);
+            seleccion=Seleccionar_boleto(cantidad_entradas);
+            borrar_boleto(seleccion, cantidad_entradas, BoletoVendido, evento_seleccionado );
+            cantidad_entradas--;
+            break;
+        case 3:
+            ListarInformacionBoleto(evento_seleccionado, cantidad_entradas, BoletoVendido);
+            break;
+        case 4:
+            //system("cls");
+            break;
+        default:
+            printf("Opcion incorrecta\n");
+            break;
+        }
     }
+    return cantidad_entradas;
 }
-boleto VenderBoletos(int EventoSeleccionado, int asientos_total, evento un_evento[]){
+boleto VenderBoletos(int evento_seleccionado, int boletos_disponibles, evento un_evento[])
+{
     boleto DatosBoleto;
     /*
     char tipo_entrada;
     int asiento;
-    char hora_vta[constante];
-    char fecha_vta[constante];
     float precio;
     char nombre_casa_venta[constante];
-    char evento[constante];    
+    char evento[constante];
     */
-    printf("\n\n*******CARGA DE BOLETO*******");
+    printf("\n\n****CARGA DE BOLETO**");
 
     printf("\nIngrese el tipo de entrada: ");
     scanf("%s", DatosBoleto.tipo_entrada);
@@ -227,49 +267,74 @@ boleto VenderBoletos(int EventoSeleccionado, int asientos_total, evento un_event
     printf("\nIngrese el precio del boleto: ");
     scanf("%f", &DatosBoleto.precio);
 
-    //obtencion de fecha/hora
-    time_t t;
-    t = time(NULL);
-    struct tm informacion = *localtime(&t);
-    DatosBoleto.fecha_vta[informacion.tm_mday, informacion.tm_mon+1, informacion.tm_year+1900]; 
-    DatosBoleto.hora_vta[informacion.tm_hour, informacion.tm_min, informacion.tm_sec];
-    
-    strcpy(DatosBoleto.evento, un_evento[EventoSeleccionado - 1].nombre);
-    //DatosBoleto[EventoSeleccionado].evento = un_evento[EventoSeleccionado].nombre;
+    strcpy(DatosBoleto.evento, un_evento[evento_seleccionado - 1].nombre);
 
-    printf("\nIngrese el nombre de Casa de Venta");
+    printf("\nIngrese el nombre de Casa de Venta: ");
     scanf("%s", DatosBoleto.nombre_casa_venta);
 
     return DatosBoleto;
 }
-void ListarInformacionBoleto(int EventoSeleccionado, int asientos_total, boleto BoletoVendido[]){
-    system("cls");
-
-    printf("\nListado de boletos vendidos:\n");
-    for (int i = 1; i < EventoSeleccionado; i++){
-        printf("Boleto #%d\n", i);
-        printf("Tipo de entrada: %s\n", BoletoVendido[i].tipo_entrada);
-        printf("Número de asiento: %d\n", BoletoVendido[i].asiento);
-        printf("Hora de venta: %s\n", BoletoVendido[i].hora_vta);
-        printf("Fecha de venta: %s\n", BoletoVendido[i].fecha_vta);
-        printf("Precio: %.2f\n", BoletoVendido[i].precio);
-        printf("Casa de venta: %s\n", BoletoVendido[i].nombre_casa_venta);
-        printf("Evento: %s\n", BoletoVendido[i].evento);
+void ListarInformacionBoleto(int evento_seleccionado, int BoletoVendido_Contador, boleto BoletoVendido[maximo_eventos][boletos])
+{
+    //system("cls");
+    /*
+    j = BoletoVendido contenidos
+    */
+    for (int j = 0; j < BoletoVendido_Contador; j++)
+    {
+        printf("\nListado de boletos vendidos:\n");
+        printf("Boleto #%d\n", j+1);
+        printf("Tipo de entrada: %s\n", BoletoVendido[evento_seleccionado][j].tipo_entrada);
+        printf("Número de asiento: %d\n", BoletoVendido[evento_seleccionado][j].asiento);
+        printf("Precio: %.2f\n", BoletoVendido[evento_seleccionado][j].precio);
+        printf("Casa de venta: %s\n", BoletoVendido[evento_seleccionado][j].nombre_casa_venta);
+        printf("Evento: %s\n", BoletoVendido[evento_seleccionado][j].evento);
         printf("\n");
     }
-   printf("\n");    
-    /*
-    char tipo_entrada;
-    int asiento;
-    char hora_vta[constante];
-    char fecha_vta[constante];
-    float precio;
-    char nombre_casa_venta[constante];
-    char evento[constante];    
-    
-    */
+    printf("\n");
 }
 
+int Seleccionar_boleto(int a)
+{
+    int seleccion;
 
+    //verificar que el evento exista "no ser menor a cero o mayor a los eventos creados"
+    do
+    {
+        printf("\nSeleccione un boleto de %i: ", a);
+        scanf("%d", &seleccion);
 
+    }
+    while(seleccion<0 || seleccion>a);
+    return seleccion-1;
 
+}
+
+boleto borrar_boleto(int seleccion, int cantidad_entradas, boleto BoletoVendido[maximo_eventos][boletos], int evento_seleccionado )
+{
+    char sino;
+    do
+    {
+        fflush(stdin);
+        printf("¿Seguro que quiere eliminar este boleto? s/n: ");
+        scanf("%c", &sino);
+    }
+    while (sino!='n' && sino!='s' && sino!='N' && sino!='S');
+
+    if (sino=='s' || sino=='S')
+    {
+        for ( int i = 0; seleccion < cantidad_entradas ; i++)
+        {
+            strcpy(BoletoVendido[evento_seleccionado][seleccion+i].tipo_entrada,BoletoVendido[evento_seleccionado][seleccion+i+1].tipo_entrada);
+            BoletoVendido[evento_seleccionado][seleccion+i].asiento= BoletoVendido[evento_seleccionado][seleccion+i+1].asiento;
+            BoletoVendido[evento_seleccionado][seleccion+i].precio=BoletoVendido[evento_seleccionado][seleccion+i+1].precio;
+            strcpy(BoletoVendido[evento_seleccionado][seleccion+i].evento, BoletoVendido[evento_seleccionado][seleccion+i+1].evento);
+            strcpy(BoletoVendido[evento_seleccionado][seleccion+i].nombre_casa_venta,BoletoVendido[evento_seleccionado][seleccion+i+1].nombre_casa_venta);
+            cantidad_entradas--;
+        }
+    }
+    else
+    {
+        printf ("\n \n No se a eliminado el boleto ");
+    }
+}
