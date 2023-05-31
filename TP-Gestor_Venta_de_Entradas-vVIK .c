@@ -113,9 +113,14 @@ int main()
                     else printf("\nNo hay mas boletos disponibles para la venta.\n");
                     break;
                 case 2:
+                    if (un_evento[EventoSeleccionado-1].cantidad_entradas <=0){
+                        printf("\nNo se han vendido boletos aun!\n");
+                        }
+                    else{
                     MostrarBoletosVendidos(MatrizBoleto, un_evento, EventoSeleccionado);
                     seleccion=Seleccionar_boleto(un_evento[EventoSeleccionado-1].cantidad_entradas);
                     borrar_boleto(seleccion,un_evento, MatrizBoleto, EventoSeleccionado );
+                    }
                     break;
                 case 3:
                     MostrarBoletosVendidos(MatrizBoleto, un_evento, EventoSeleccionado);
