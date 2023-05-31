@@ -54,11 +54,10 @@ int menu_boletos(int evento_seleccionado, int boletos_disponibles, int eventos_c
 boleto VenderBoletos(int evento_seleccionado, int boletos_disponibles, evento un_evento[]);
 void ListarInformacionBoleto(int evento_seleccionado, int BoletoVendido_Contador, boleto BoletoVendido[maximo_eventos][boletos]);
 int Seleccionar_boleto(int a);
-boleto borrar_boleto(int seleccion, int cantidad_entradas, boleto BoletoVendido[maximo_eventos][boletos], int evento_seleccionado );
 
 int main()
 {
-    printf("\t----------Bienvenido a VentaOnlineUwU!!----------");
+    printf("\t----------Bienvenido a VentaOnline!!----------");
     menu_eventos(maximo_eventos);
 
     return 0;
@@ -87,16 +86,14 @@ void menu_eventos(int evento_numero_maximo)
     int opcion;
     evento un_evento[evento_numero_maximo];
 
-    un_evento[0].cantidad_entradas=0;
-    un_evento[1].cantidad_entradas=0;
-    un_evento[2].cantidad_entradas=0;
-    un_evento[3].cantidad_entradas=0;
-    un_evento[4].cantidad_entradas=0;
+    for(int i=0; i< evento_numero_maximo; i++)
+    un_evento[i].cantidad_entradas=0;
+
     //eventos disponibles
 
     while (opcion!=5)
     {
-        printf("\nEventos disponibles %i\\%i eventos, ¿que desea realizar? ", eventos_creados, evento_numero_maximo);
+        printf("\nEventos disponibles %i\\%i eventos, Que accion desea realizar? ", eventos_creados, evento_numero_maximo);
 
         printf("\n1. Crear evento\n");
         printf("2. Listar eventos\n");
@@ -116,7 +113,7 @@ void menu_eventos(int evento_numero_maximo)
             }
             else
             {
-                status("\nno se puede crear mas eventos!");
+                status("\nNo se puede crear mas eventos!");
             }
             break;
         case 2:
@@ -126,7 +123,7 @@ void menu_eventos(int evento_numero_maximo)
             ListarEvento(un_evento, eventos_creados);
             evento_seleccionado = SeleccionarEvento(eventos_creados, evento_numero_maximo);
             /*
-            esta funcion requiere de:
+            esta función requiere de:
 
             -evento seleccionado = (evento_seleccionado)
             -numero de boletos = (boletos_disponibles)
@@ -134,7 +131,7 @@ void menu_eventos(int evento_numero_maximo)
             -maximo de eventos que la empresa puede manejar = (evento_numero_maximo)
             -vector que contiene numero "id" y un nombre = un_evento
             */
-            //se llevo a cabo la seleccion, continuar en menu_boletos()
+            //se llevó a cabo la selección, continuar en menu_boletos()
             un_evento[evento_seleccionado].cantidad_entradas=menu_boletos(evento_seleccionado, boletos_disponibles, eventos_creados, evento_numero_maximo, un_evento,  un_evento[evento_seleccionado].cantidad_entradas);
             break;
         case 4:
@@ -210,7 +207,7 @@ int menu_boletos(int evento_seleccionado, int boletos_disponibles, int eventos_c
         status("\n\t\tEventos: operativo\n");
         printf("\nSu seleccion fue el evento: %i Nombre: \"%s\"!\n", evento_seleccionado, un_evento[evento_seleccionado-1].nombre);
         printf("\nTotal de boletos vendidos %d\\%d \n", cantidad_entradas, boletos_disponibles);
-        printf("\nVenta de boletos! ¿Que accion va a realizar?\n");
+        printf("\nVenta de boletos! Que accion desea a realizar?\n");
 
         printf("1. Vender un boleto\n");
         printf("2. Cancelar la venta de un boleto\n");
@@ -219,19 +216,47 @@ int menu_boletos(int evento_seleccionado, int boletos_disponibles, int eventos_c
         printf("Ingrese una opcion: ");
         scanf("%d", &opcion);
 
-        printf("\n*____________________________________*");
-
         switch(opcion)
         {
         case 1:
             BoletoVendido[evento_seleccionado][cantidad_entradas] = VenderBoletos(evento_seleccionado,boletos_disponibles, un_evento);
-            cantidad_entradas++;   //se vendio un boleto
+            cantidad_entradas++;   //se vendió un boleto
             break;
         case 2:
-            ListarInformacionBoleto(evento_seleccionado, cantidad_entradas, BoletoVendido);
-            seleccion=Seleccionar_boleto(cantidad_entradas);
-            borrar_boleto(seleccion, cantidad_entradas, BoletoVendido, evento_seleccionado );
-            cantidad_entradas--;
+            if(cantidad_entradas<=0){
+                printf("\nNo se han vendido boletos aun!\n");
+            }
+            else{
+                ListarInformacionBoleto(evento_seleccionado, cantidad_entradas, BoletoVendido);
+                seleccion=Seleccionar_boleto(cantidad_entradas);
+                char sino;
+                do
+                {
+                    fflush(stdin);
+                    printf("\nSeguro que quiere eliminar este boleto? s/n: ");
+                    scanf("%c", &sino);
+                }
+                while (sino!='n' && sino!='s' && sino!='N' && sino!='S');
+
+                if (sino=='s' || sino=='S')
+                {
+                    for ( int i = seleccion; i< cantidad_entradas ; i++)
+                    {
+                        strcpy(BoletoVendido[evento_seleccionado-1][seleccion+i].tipo_entrada,BoletoVendido[evento_seleccionado-1][seleccion+i+1].tipo_entrada);
+                        BoletoVendido[evento_seleccionado-1][seleccion+i].asiento= BoletoVendido[evento_seleccionado-1][seleccion+i+1].asiento;
+                        BoletoVendido[evento_seleccionado-1][seleccion+i].precio=BoletoVendido[evento_seleccionado-1][seleccion+i+1].precio;
+                        strcpy(BoletoVendido[evento_seleccionado-1][seleccion+i].evento, BoletoVendido[evento_seleccionado-1][seleccion+i+1].evento);
+                        strcpy(BoletoVendido[evento_seleccionado-1][seleccion+i].nombre_casa_venta,BoletoVendido[evento_seleccionado-1][seleccion+i+1].nombre_casa_venta);
+                       // cantidad_entradas--;
+                    }
+                }
+                else
+                {
+                    printf ("\n \n No se ha eliminado el boleto ");
+                }
+                //pena mental
+                cantidad_entradas--;
+            }
             break;
         case 3:
             ListarInformacionBoleto(evento_seleccionado, cantidad_entradas, BoletoVendido);
@@ -310,31 +335,4 @@ int Seleccionar_boleto(int a)
 
 }
 
-boleto borrar_boleto(int seleccion, int cantidad_entradas, boleto BoletoVendido[maximo_eventos][boletos], int evento_seleccionado )
-{
-    char sino;
-    do
-    {
-        fflush(stdin);
-        printf("¿Seguro que quiere eliminar este boleto? s/n: ");
-        scanf("%c", &sino);
-    }
-    while (sino!='n' && sino!='s' && sino!='N' && sino!='S');
 
-    if (sino=='s' || sino=='S')
-    {
-        for ( int i = 0; seleccion < cantidad_entradas ; i++)
-        {
-            strcpy(BoletoVendido[evento_seleccionado][seleccion+i].tipo_entrada,BoletoVendido[evento_seleccionado][seleccion+i+1].tipo_entrada);
-            BoletoVendido[evento_seleccionado][seleccion+i].asiento= BoletoVendido[evento_seleccionado][seleccion+i+1].asiento;
-            BoletoVendido[evento_seleccionado][seleccion+i].precio=BoletoVendido[evento_seleccionado][seleccion+i+1].precio;
-            strcpy(BoletoVendido[evento_seleccionado][seleccion+i].evento, BoletoVendido[evento_seleccionado][seleccion+i+1].evento);
-            strcpy(BoletoVendido[evento_seleccionado][seleccion+i].nombre_casa_venta,BoletoVendido[evento_seleccionado][seleccion+i+1].nombre_casa_venta);
-            cantidad_entradas--;
-        }
-    }
-    else
-    {
-        printf ("\n \n No se a eliminado el boleto ");
-    }
-}
