@@ -41,6 +41,8 @@ boleto VenderBoletos( int numero_asientos, int EventoSeleccionado, evento un_eve
 
 void MostrarBoletosVendidos(boleto MatrizBoleto[max_eventos][numero_asientos], evento un_evento[max_eventos], int EventoSeleccionado);
 
+void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[max_eventos][numero_asientos]);
+
 int main()
 {
     evento un_evento[max_eventos];
@@ -62,7 +64,8 @@ int main()
         printf("2. Listar eventos\n");
         printf("3. Seleccionar un evento\n");
         printf("4. Modificar evento\n");
-        printf("5. Apagar sistema\n");
+        printf("5. Ordenar eventos por cantidad de entradas\n");
+        printf("6. Apagar sistema\n");
         printf("Ingrese una opcion: ");
         scanf("%d", &opcion);
 
@@ -142,13 +145,16 @@ int main()
             ModificarEvento(EventoSeleccionado, un_evento);
             break;
         case 5:
+            Ordenar_evento_burbuja (un_evento,MatrizBoleto);
+            break;
+        case 6:
             break;
         default:
             printf("Opcion incorrecta\n");
             break;
         }
     }
-    while (opcion!=5);
+    while (opcion!=6);
     return 0;
 }
 
@@ -169,7 +175,7 @@ void ListarEventos(evento un_evento[], int num_eventos)
     system("cls");
     printf("\nListado de eventos:\n");
     for (int i = 0; i < num_eventos; i++)
-        printf("%d: %s\n", un_evento[i].numero, un_evento[i].nombre);
+        printf("%d: %s\n", i+1, un_evento[i].nombre);
 }
 
 int SeleccionarEvento(int num_eventos)
@@ -258,7 +264,7 @@ int borrar_boleto(int seleccion, evento un_evento[max_eventos], boleto MatrizBol
     do
     {
         fflush(stdin);
-        printf("¿Seguro que quiere eliminar este boleto? s/n: ");
+        printf("ï¿½Seguro que quiere eliminar este boleto? s/n: ");
         scanf("%c", &sino);
     }
     while (sino!='n' && sino!='s' && sino!='N' && sino!='S');
@@ -283,3 +289,79 @@ int borrar_boleto(int seleccion, evento un_evento[max_eventos], boleto MatrizBol
     return un_evento[EventoSeleccionado - 1].cantidad_entradas;
 }
 
+void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[max_eventos][numero_asientos]){
+    int i, j, k;
+    evento aux_evento;
+    boleto aux_boleto[numero_asientos];
+
+    system("cls");
+
+    if (num_eventos!=0)
+    {
+        for(i=0;i<num_eventos;i++){
+            for ( j=i+1; j < num_eventos; j++)
+            {
+                if (un_evento[i].cantidad_entradas>un_evento[j].cantidad_entradas)
+                {
+                    //carga al auxiliar evento
+                    aux_evento.cantidad_entradas=un_evento[i].cantidad_entradas;
+                    aux_evento.numero=un_evento[i].numero,
+                    strcpy(aux_evento.nombre,un_evento[i].nombre);
+
+                    //remplazo eentre espacisos del vector
+                    un_evento[i].cantidad_entradas=un_evento[j].cantidad_entradas;
+                    un_evento[i].numero=un_evento[j].numero,
+                    strcpy(un_evento[i].nombre,un_evento[j].nombre);
+
+                    //Carga del vector desde el auxiliar
+                    un_evento[j].cantidad_entradas=aux_evento.cantidad_entradas;
+                    un_evento[j].numero= aux_evento.numero,
+                    strcpy(un_evento[j].nombre,aux_evento.nombre);
+
+
+
+                    for (k = 0; k < numero_asientos; k++)
+                    {
+                        //carga auxilia boletos
+                        strcpy(aux_boleto[k].tipo_entrada, MatrizBoleto[i][k].tipo_entrada);
+                        aux_boleto[k].asiento = MatrizBoleto[i][k].asiento;
+                        aux_boleto[k].precio = MatrizBoleto[i][k].precio;
+                        strcpy(aux_boleto[k].evento, MatrizBoleto[i][k].evento);
+                        strcpy(aux_boleto[k].nombre_casa_venta, MatrizBoleto[i][k].nombre_casa_venta);
+
+                        //remplazo eentre espacisos de LA MATRIZ
+                        strcpy(MatrizBoleto[i][k].tipo_entrada, MatrizBoleto[j][k].tipo_entrada);
+                        MatrizBoleto[i][k].asiento = MatrizBoleto[j][k].asiento;
+                        MatrizBoleto[i][k].precio = MatrizBoleto[j][k].precio;
+                        strcpy(MatrizBoleto[i][k].evento, MatrizBoleto[j][k].evento);
+                        strcpy(MatrizBoleto[i][k].nombre_casa_venta, MatrizBoleto[j][k].nombre_casa_venta);
+
+                        //Carga de LA MATRIZ desde el auxiliar
+                        strcpy(MatrizBoleto[j][k].tipo_entrada, aux_boleto[k].tipo_entrada);
+                        MatrizBoleto[j][k].asiento = aux_boleto[k].asiento;
+                        MatrizBoleto[j][k].precio = aux_boleto[k].precio;
+                        strcpy(MatrizBoleto[j][k].evento, aux_boleto[k].evento);
+                        strcpy(MatrizBoleto[j][k].nombre_casa_venta, aux_boleto[k].nombre_casa_venta);
+                    }
+
+
+                }
+
+            }
+
+        }
+        printf("-------------------------------------\n\n");
+        printf("**********EVENTOS ORDENADOS**********\n\n");
+        printf("-------------------------------------\n");
+    }
+    else
+    {
+        printf("-------------------------------------\n\n");
+        printf ("*****NO HAY EVENTOS CREADOS AUN*****\n\n");
+        printf("-------------------------------------\n");
+    }
+
+
+
+    return;
+}
