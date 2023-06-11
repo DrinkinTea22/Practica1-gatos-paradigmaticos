@@ -293,10 +293,13 @@ void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[
     int i, j, k;
     evento aux_evento;
     boleto aux_boleto[numero_asientos];
+
+    system("cls");
+    
     if (num_eventos!=0)
     {
-        for(i=0;i<num_eventos+1;i++){
-            for ( j=i+1; j < num_eventos+1; j++)
+        for(i=0;i<num_eventos;i++){
+            for ( j=i+1; j < num_eventos; j++)
             {
                 if (un_evento[i].cantidad_entradas>un_evento[j].cantidad_entradas)
                 {
@@ -317,7 +320,7 @@ void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[
 
 
 
-                    /*for (k = 0; k < numero_asientos; k++)
+                    for (k = 0; k < numero_asientos; k++)
                     {
                         //carga auxilia boletos
                         strcpy(aux_boleto[k].tipo_entrada, MatrizBoleto[i][k].tipo_entrada);
@@ -339,7 +342,7 @@ void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[
                         MatrizBoleto[j][k].precio = aux_boleto[k].precio;
                         strcpy(MatrizBoleto[j][k].evento, aux_boleto[k].evento);
                         strcpy(MatrizBoleto[j][k].nombre_casa_venta, aux_boleto[k].nombre_casa_venta);
-                    }*/
+                    }
 
 
                 }
@@ -347,10 +350,15 @@ void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[
             }
 
         }
+        printf("-------------------------------------\n\n");
+        printf("**********EVENTOS ORDENADOS**********\n\n");
+        printf("-------------------------------------\n");
     }
     else
     {
-        printf ("No hay eventos creados aun");
+        printf("-------------------------------------\n\n");
+        printf ("*****NO HAY EVENTOS CREADOS AUN*****\n\n");
+        printf("-------------------------------------\n");
     }
 
 
