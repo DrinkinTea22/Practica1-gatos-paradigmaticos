@@ -41,6 +41,13 @@ boleto VenderBoletos( int numero_asientos, int EventoSeleccionado, evento un_eve
 
 void MostrarBoletosVendidos(boleto MatrizBoleto[max_eventos][numero_asientos], evento un_evento[max_eventos], int EventoSeleccionado);
 
+void MergeSort(boleto MatrizBoleto[max_eventos][numero_asientos], int ini, int fin, int EventoSeleccionado);
+void Mezclar(boleto MatrizBoleto[max_eventos][numero_asientos],int ini,int med,int fin, int EventoSeleccionado);
+
+void quickSort(boleto MatrizBoleto[max_eventos][numero_asientos], int posComienzo, int posFinal,int EventoSeleccionado);
+int particionado(boleto MatrizBoleto[max_eventos][numero_asientos], int posComienzo, int posFinal, int EventoSeleccionado);
+void intercambio(boleto* a, boleto* b);
+
 void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[max_eventos][numero_asientos]);
 
 int main()
@@ -50,12 +57,14 @@ int main()
 
     printf("\t----------Bienvenido a VentaOnlineUwU!!----------");
     printf("\n Ingrese el numero de asientos de los cuales dispone para vender entradas: ");
-   scanf("%d", &numero_asientos);
+    scanf("%d", &numero_asientos);
 
     boleto MatrizBoleto[max_eventos][numero_asientos];
+    //int tamano_vector = sizeof(MatrizBoleto) / sizeof(MatrizBoleto[0][0]);
+    //alt: MatrizBoleto[x][n] -> x*n= tamano de MatrizBoleto
 
     int opcion;
-    int  seleccion;
+    int seleccion;
     do
     {
         printf("\n\t\tEventos: manipulacion\n");
@@ -64,7 +73,7 @@ int main()
         printf("2. Listar eventos\n");
         printf("3. Seleccionar un evento\n");
         printf("4. Modificar evento\n");
-        printf("5. Ordenar eventos por cantidad de entradas\n");
+        printf("5. Ordenar eventos por cantidad de entradas!\n");
         printf("6. Apagar sistema\n");
         printf("Ingrese una opcion: ");
         scanf("%d", &opcion);
@@ -86,7 +95,6 @@ int main()
             ListarEventos(un_evento, num_eventos);
             EventoSeleccionado = SeleccionarEvento(num_eventos);
 
-
             int opcion2;
             boleto Datos_boleto;
 
@@ -100,7 +108,9 @@ int main()
                 printf("1. Vender un boleto\n");
                 printf("2. Cancelar la venta de un boleto\n");
                 printf("3. Listar boletos vendidos\n");
-                printf("4. Volver\n");
+                printf("4. Ordenar los boletos por precio!\n");
+                printf("5. Ordenar los boletos por numero de asiento!\n");
+                printf("6. Volver\n");
                 printf("Ingrese una opcion: ");
                 scanf("%d", &opcion2);
 
@@ -116,19 +126,36 @@ int main()
                     else printf("\nNo hay mas boletos disponibles para la venta.\n");
                     break;
                 case 2:
-                    if (un_evento[EventoSeleccionado-1].cantidad_entradas <=0){
+                    if (un_evento[EventoSeleccionado-1].cantidad_entradas <=0)
+                    {
                         printf("\nNo se han vendido boletos aun!\n");
-                        }
-                    else{
-                    MostrarBoletosVendidos(MatrizBoleto, un_evento, EventoSeleccionado);
-                    seleccion=Seleccionar_boleto(un_evento[EventoSeleccionado-1].cantidad_entradas);
-                    borrar_boleto(seleccion,un_evento, MatrizBoleto, EventoSeleccionado );
+                    }
+                    else
+                    {
+                        system("cls");
+                        MostrarBoletosVendidos(MatrizBoleto, un_evento, EventoSeleccionado);
+                        seleccion=Seleccionar_boleto(un_evento[EventoSeleccionado-1].cantidad_entradas);
+                        borrar_boleto(seleccion,un_evento, MatrizBoleto, EventoSeleccionado );
                     }
                     break;
                 case 3:
                     MostrarBoletosVendidos(MatrizBoleto, un_evento, EventoSeleccionado);
                     break;
                 case 4:
+                    MergeSort(MatrizBoleto, 0, un_evento[EventoSeleccionado-1].cantidad_entradas - 1, EventoSeleccionado);
+                    system("cls");
+                    printf("\n------------------------------------------\n\n");
+                    printf("Los boletos han sido ordenados por precio!\n\n");
+                    printf("------------------------------------------\n");
+                    break;
+                case 5:
+                    quickSort(MatrizBoleto, 0, un_evento[EventoSeleccionado-1].cantidad_entradas - 1, EventoSeleccionado);
+                    system("cls");
+                    printf("\n-----------------------------------------------------\n\n");
+                    printf("Los boletos han sido ordenados por numero de asiento!\n\n");
+                    printf("-----------------------------------------------------\n");
+                    break;
+                case 6:
                     system("cls");
                     break;
                 default:
@@ -136,7 +163,7 @@ int main()
                     break;
                 }
             }
-            while (opcion2 != 4);
+            while (opcion2 != 6);
 
             break;
         case 4:
@@ -175,7 +202,7 @@ void ListarEventos(evento un_evento[], int num_eventos)
     system("cls");
     printf("\nListado de eventos:\n");
     for (int i = 0; i < num_eventos; i++)
-        printf("%d: %s\n", i+1, un_evento[i].nombre);
+        printf("%d: %s\n", un_evento[i].numero, un_evento[i].nombre);
 }
 
 int SeleccionarEvento(int num_eventos)
@@ -190,7 +217,8 @@ int SeleccionarEvento(int num_eventos)
     return EventoSeleccionado;
 }
 
-void ModificarEvento(int EventoSeleccionado, evento un_evento[]) {
+void ModificarEvento(int EventoSeleccionado, evento un_evento[])
+{
     printf("\nEvento seleccionado: %s\n", un_evento[EventoSeleccionado - 1].nombre);
     printf("Ingrese el nuevo nombre del evento: ");
     scanf(" %[^\n]s", un_evento[EventoSeleccionado - 1].nombre);
@@ -231,6 +259,7 @@ boleto VenderBoletos( int numero_asientos, int EventoSeleccionado, evento un_eve
 
 void MostrarBoletosVendidos(boleto MatrizBoleto[max_eventos][numero_asientos],evento un_evento[max_eventos], int EventoSeleccionado )
 {
+    system("cls");
     printf("\nListado de boletos vendidos:\n\n");
     for (int i = 0; i < un_evento[EventoSeleccionado-1].cantidad_entradas; i++)
     {
@@ -264,7 +293,7 @@ int borrar_boleto(int seleccion, evento un_evento[max_eventos], boleto MatrizBol
     do
     {
         fflush(stdin);
-        printf("ï¿½Seguro que quiere eliminar este boleto? s/n: ");
+        printf("¿Seguro que quiere eliminar este boleto? s/n: ");
         scanf("%c", &sino);
     }
     while (sino!='n' && sino!='s' && sino!='N' && sino!='S');
@@ -282,11 +311,106 @@ int borrar_boleto(int seleccion, evento un_evento[max_eventos], boleto MatrizBol
         un_evento[EventoSeleccionado - 1].cantidad_entradas--;
         printf("\nEl boleto ha sido eliminado exitosamente.\n");
     }
-    else
-    {
-        printf("\nNo se ha eliminado el boleto.\n");
-    }
+    else printf("\nNo se ha eliminado el boleto.\n");
+
     return un_evento[EventoSeleccionado - 1].cantidad_entradas;
+}
+
+void MergeSort(boleto MatrizBoleto[max_eventos][numero_asientos], int ini, int fin, int EventoSeleccionado)
+{
+    if (ini<fin)
+    {
+        int med = (ini+fin)/2;
+        MergeSort(MatrizBoleto, ini, med, EventoSeleccionado);
+        MergeSort(MatrizBoleto, med+1, fin, EventoSeleccionado);
+        Mezclar(MatrizBoleto, ini, med, fin, EventoSeleccionado);
+    }
+    return;
+}
+
+void Mezclar(boleto MatrizBoleto[max_eventos][numero_asientos], int ini, int med, int fin, int EventoSeleccionado)
+{
+    int n1 = med - ini + 1;
+    int n2 = fin - med;
+
+    boleto izq[n1], der[n2];
+
+    for (int i = 0; i < n1; i++)
+        izq[i] = MatrizBoleto[EventoSeleccionado - 1][ini + i];
+    for (int j = 0; j < n2; j++)
+        der[j] = MatrizBoleto[EventoSeleccionado - 1][med + 1 + j];
+
+    int i = 0, j = 0, k = ini;
+
+    while (i < n1 && j < n2)
+    {
+        if (izq[i].precio <= der[j].precio)
+        {
+            MatrizBoleto[EventoSeleccionado - 1][k] = izq[i];
+            i++;
+        }
+        else
+        {
+            MatrizBoleto[EventoSeleccionado - 1][k] = der[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1)
+    {
+        MatrizBoleto[EventoSeleccionado - 1][k] = izq[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2)
+    {
+        MatrizBoleto[EventoSeleccionado - 1][k] = der[j];
+        j++;
+        k++;
+    }
+}
+void intercambio(boleto* a, boleto* b)
+{
+	boleto t = *a;
+	*a = *b;
+	*b = t;
+}
+int particionado(boleto MatrizBoleto[max_eventos][numero_asientos], int posComienzo, int posFinal, int EventoSeleccionado)
+{
+	// elegir la referencia
+	boleto pivot = MatrizBoleto[EventoSeleccionado - 1][posFinal];
+
+    // posicion del valor mas pequeno e indicar
+    // la posicion derecha de la referencia encontrada hasta ahora
+	int i = (posComienzo - 1);
+
+	for (int j = posComienzo; j <= posFinal - 1; j++) {
+
+        // si el valor actual es mas pequeno que la referencia
+		if (MatrizBoleto[EventoSeleccionado - 1][j].asiento <= pivot.asiento) {
+
+            //incrementar la posicion del valor mas pequeno
+			i++;
+            //en posicion de vector i(comienzo) intercambiar con posicion de vector j(i-1)
+			intercambio(&MatrizBoleto[EventoSeleccionado - 1][i], &MatrizBoleto[EventoSeleccionado - 1][j]);
+		}
+	}
+	intercambio(&MatrizBoleto[EventoSeleccionado - 1][i+1], &MatrizBoleto[EventoSeleccionado - 1][posFinal]);
+	return (i + 1);
+}
+void quickSort(boleto MatrizBoleto[max_eventos][numero_asientos], int posComienzo, int posFinal, int EventoSeleccionado)
+{
+	if (posComienzo < posFinal) {
+
+		int indiceParticion = particionado(MatrizBoleto, posComienzo, posFinal, EventoSeleccionado);
+
+		// ordenar los valores previos
+		// particionar y particionar de nuevo
+		quickSort(MatrizBoleto, posComienzo,indiceParticion - 1, EventoSeleccionado);
+		quickSort(MatrizBoleto, indiceParticion + 1, posFinal, EventoSeleccionado);
+	}
 }
 
 void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[max_eventos][numero_asientos]){
@@ -350,14 +474,14 @@ void Ordenar_evento_burbuja (evento un_evento[max_eventos], boleto MatrizBoleto[
             }
 
         }
-        printf("-------------------------------------\n\n");
-        printf("**********EVENTOS ORDENADOS**********\n\n");
-        printf("-------------------------------------\n");
+        printf("-----------------------------------------------------------\n\n");
+        printf("Los eventos han sido ordenados por la cantidad de entradas!\n\n");
+        printf("-----------------------------------------------------------\n");
     }
     else
     {
         printf("-------------------------------------\n\n");
-        printf ("*****NO HAY EVENTOS CREADOS AUN*****\n\n");
+        printf ("****No hay eventos para ordenar.****\n\n");
         printf("-------------------------------------\n");
     }
 
